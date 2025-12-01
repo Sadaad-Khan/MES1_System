@@ -1,0 +1,11 @@
+# Goal: Command the winch to move
+bool pull          # true = retract (pull in), false = extend (let out)
+bool use_timer     # true = use duration timer, false = run until limit switch
+float32 duration   # Duration in seconds (only used if use_timer is true)
+---
+# Result: Final outcome of the action
+bool success       # true if completed successfully
+uint16 error_code  # 0 = no error, 200+ = error codes
+---
+# Feedback: Progress updates during execution
+float64 status     # Progress from 0.0 to 1.0
