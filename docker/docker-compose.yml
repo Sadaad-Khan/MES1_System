@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  can_bridge:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: ros2_can_bridge
+    image: ros2_can_bridge_native:latest
+    
+    # Network mode: host is required for CAN interface access
+    network_mode: host
+    
+    # Privileged mode and capabilities for CAN access
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+    
+    # Mount devices
+    devices:
+      - /dev/net/tun
+    
+    # Environment variables
+    environment:
+      - ROS_DOMAIN_ID=0
+      - ROS_LOCALHOST_ONLY=0
+      - CAN_INTERFACE=can0
+      - CAN_BITRATE=1000000
+      - NODE_ID=21
+      - LOG_LEVEL=INFO
+    
+    # Volumes
+    volumes:
+      # Mount host's network namespace for CAN access
+      - /sys/class/net:/sys/class/net:ro
+      - /sys/devices:/sys/devices:ro
+      # Optional: Mount config directory
+      - ./config:/ros2_ws/src/ros_can_bridge_native/config:ro
+      # Optional: Mount logs directory
+      - ./logs:/var/log/can_bridge
+    
+    # Restart policy
+    restart: unless-stopped
+    
+    # Command (override default if needed)
+    command: >
+      ros2 launch ros_can_bridge_native can_bridge.launch.py
+      can_interface:=${CAN_INTERFACE}
+      node_id:=${NODE_ID}
+      setup_can:=false
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "ros2", "node", "list"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Separate diagnostics viewer
+  diagnostics_viewer:
+    image: ros2_can_bridge_native:latest
+    container_name: ros2_can_diagnostics
+    network_mode: host
+    environment:
+      - ROS_DOMAIN_ID=0
+      - ROS_LOCALHOST_ONLY=0
+    command: ros2 topic echo /diagnostics
+    depends_on:
+      - can_bridge
+    profiles:
+      - debug
+
+  # Optional: Interactive command client
+  command_client:
+    image: ros2_can_bridge_native:latest
+    container_name: ros2_can_client
+    network_mode: host
+    stdin_open: true
+    tty: true
+    environment:
+      - ROS_DOMAIN_ID=0
+      - ROS_LOCALHOST_ONLY=0
+    command: ros2 run ros_can_bridge_native command_client
+    depends_on:
+      - can_bridge
+    profiles:
+      - interactive

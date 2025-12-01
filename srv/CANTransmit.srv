@@ -1,0 +1,9 @@
+# Request
+uint32 can_id               # CAN identifier
+uint8[] data                # Payload (0-8 bytes)
+bool extended               # Extended ID format
+---
+# Response
+bool success
+string message
+uint64 timestamp            # Transmission timestamp (nanoseconds)

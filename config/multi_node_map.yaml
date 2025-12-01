@@ -1,0 +1,220 @@
+# Multi-Node CANopen Relay Network Configuration
+#
+# This file defines the distributed relay network topology.
+# Each node runs the same Arduino firmware (can_relay_node_multi.ino)
+# configured with different NODE_ROLE and NODE_ID settings.
+#
+# The ROS 2 bridge uses this configuration to:
+# - Discover and track nodes dynamically
+# - Create per-node topics and services
+# - Route commands to appropriate nodes
+# - Monitor node health and diagnostics
+
+# CAN bus configuration
+can_interface: "can0"
+bitrate: 1000000  # 1 Mbps
+sdo_timeout: 3.0  # seconds
+heartbeat_timeout: 10.0  # seconds
+
+# Node definitions
+nodes:
+  # Node A: LED DRL Control
+  - name: relay_drl
+    node_id: 0x11  # 17 decimal
+    role: DRL
+    description: "LED DRL control relay"
+    relays:
+      - id: K1
+        pin: 25
+        description: "LED DRL output"
+        default_state: false
+    supported_commands:
+      - 0    # ALL_OFF
+      - 1    # K1_ON
+      - 2    # K1_OFF
+      - 99   # ALL_ON
+      - 254  # SOFTWARE_RESET
+    topics:
+      state: "/relay_drl/state"
+      diagnostics: "/relay_drl/diagnostics"
+    services:
+      control: "/relay_drl/control"
+  
+  # Node B: Safety Light Control
+  - name: relay_safety
+    node_id: 0x12  # 18 decimal
+    role: SAFETY
+    description: "Safety light control relay"
+    relays:
+      - id: K2
+        pin: 14
+        description: "Safety light output"
+        default_state: false
+    supported_commands:
+      - 0    # ALL_OFF
+      - 3    # K2_ON
+      - 4    # K2_OFF
+      - 99   # ALL_ON
+      - 254  # SOFTWARE_RESET
+    topics:
+      state: "/relay_safety/state"
+      diagnostics: "/relay_safety/diagnostics"
+    services:
+      control: "/relay_safety/control"
+  
+  # Node C: Battery Lock Control
+  - name: relay_battery
+    node_id: 0x13  # 19 decimal
+    role: BATTERY
+    description: "Battery lock control (dual relay)"
+    relays:
+      - id: K3
+        pin: 15
+        description: "Battery lock right"
+        default_state: false
+      - id: K4
+        pin: 8
+        description: "Battery lock left"
+        default_state: false
+    supported_commands:
+      - 0    # ALL_OFF
+      - 5    # K3_ON
+      - 6    # K3_OFF
+      - 7    # K4_ON
+      - 8    # K4_OFF
+      - 99   # ALL_ON
+      - 254  # SOFTWARE_RESET
+    topics:
+      state: "/relay_battery/state"
+      diagnostics: "/relay_battery/diagnostics"
+    services:
+      control: "/relay_battery/control"
+  
+  # Node D: Future Expansion
+  - name: relay_future
+    node_id: 0x14  # 20 decimal
+    role: FUTURE
+    description: "Reserved for future expansion"
+    relays: []
+    supported_commands:
+      - 0    # ALL_OFF
+      - 99   # ALL_ON
+      - 254  # SOFTWARE_RESET
+    topics:
+      state: "/relay_future/state"
+      diagnostics: "/relay_future/diagnostics"
+    services:
+      control: "/relay_future/control"
+    enabled: false  # Disabled until hardware is assigned
+
+# Broadcast command mapping
+# These commands are sent to ALL nodes simultaneously
+broadcast_commands:
+  all_on:
+    command_code: 99
+    description: "Turn on all relays on all nodes"
+    target_nodes: ["relay_drl", "relay_safety", "relay_battery"]
+  
+  all_off:
+    command_code: 0
+    description: "Turn off all relays on all nodes"
+    target_nodes: ["relay_drl", "relay_safety", "relay_battery"]
+  
+  emergency_stop:
+    command_code: 0
+    description: "Emergency stop - turn off everything"
+    target_nodes: ["relay_drl", "relay_safety", "relay_battery", "relay_future"]
+    priority: high
+
+# Command aliases for convenience
+command_aliases:
+  drl_on: {node: relay_drl, command: 1}
+  drl_off: {node: relay_drl, command: 2}
+  
+  safety_on: {node: relay_safety, command: 3}
+  safety_off: {node: relay_safety, command: 4}
+  
+  battery_lock_right_on: {node: relay_battery, command: 5}
+  battery_lock_right_off: {node: relay_battery, command: 6}
+  battery_lock_left_on: {node: relay_battery, command: 7}
+  battery_lock_left_off: {node: relay_battery, command: 8}
+  
+  battery_lock_both_on: 
+    - {node: relay_battery, command: 5}
+    - {node: relay_battery, command: 7}
+  
+  battery_lock_both_off:
+    - {node: relay_battery, command: 6}
+    - {node: relay_battery, command: 8}
+
+# Diagnostic monitoring configuration
+diagnostics:
+  enabled: true
+  publish_rate: 1.0  # Hz
+  heartbeat_check_rate: 2.0  # Hz
+  
+  # Thresholds for warnings/errors
+  thresholds:
+    heartbeat_timeout_warn: 8.0   # seconds
+    heartbeat_timeout_error: 15.0  # seconds
+    tx_failure_rate_warn: 0.1     # 10% failure rate
+    tx_failure_rate_error: 0.3    # 30% failure rate
+    recovery_count_warn: 3
+    recovery_count_error: 10
+
+# Safety and interlock configuration
+safety:
+  # Enable safety interlocks (prevent conflicting relay states)
+  enable_interlocks: false
+  
+  # Interlock rules (example - customize as needed)
+  interlocks: []
+  # Example:
+  # - nodes: [relay_drl, relay_safety]
+  #   condition: "Cannot have both DRL and Safety lights on simultaneously"
+  
+  # Emergency stop behavior
+  emergency_stop:
+    command_code: 0
+    broadcast: true
+    require_confirmation: false
+
+# Logging configuration
+logging:
+  level: INFO  # DEBUG, INFO, WARN, ERROR
+  log_can_traffic: false
+  log_sdo_transactions: true
+  log_heartbeats: false
+  log_diagnostics: true
+  
+  # JSON logging for machine parsing
+  enable_json_logs: true
+  json_log_file: "/tmp/can_relay_network.jsonl"
+
+# Network recovery configuration
+recovery:
+  # Progressive backoff for CAN bus recovery
+  backoff_levels: [10.0, 30.0, 60.0]  # seconds
+  max_recovery_attempts: 10
+  
+  # Node reconnection behavior
+  auto_reconnect: true
+  reconnect_delay: 2.0  # seconds
+  
+  # State persistence
+  save_state_on_shutdown: true
+  restore_state_on_startup: false  # Safety: default to OFF
+
+# Performance tuning
+performance:
+  # ROS 2 executor configuration
+  use_multithreaded_executor: true
+  num_threads: 4
+  
+  # CAN polling rate
+  can_poll_rate_hz: 200  # 200 Hz = 5ms period
+  
+  # Message queue sizes
+  sdo_queue_size: 100
+  state_queue_size: 10
+  diagnostics_queue_size: 10

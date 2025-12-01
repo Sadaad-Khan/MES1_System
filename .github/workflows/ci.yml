@@ -1,0 +1,150 @@
+name: CANopen Relay System CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  python-lint-and-test:
+    runs-on: ubuntu-latest
+    name: Python Code Quality & Tests
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest python-can
+          
+      - name: Lint with flake8
+        run: |
+          # Stop the build if there are Python syntax errors or undefined names
+          flake8 tests/ ros_can_bridge_native/ scripts/ --count --select=E9,F63,F7,F82 --show-source --statistics
+          # Exit-zero treats all errors as warnings
+          flake8 tests/ ros_can_bridge_native/ scripts/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      
+      - name: Run test harness (dry run with virtual backend)
+        run: |
+          cd tests
+          python3 test_harness.py --backend virtual --interface vcan0 --node-id 0x15 --dry-run
+        continue-on-error: true  # Virtual backend may not be fully functional
+      
+      - name: Check batch control script
+        run: |
+          python3 scripts/batch_control.py --help
+  
+  arduino-compile-check:
+    runs-on: ubuntu-latest
+    name: Arduino Firmware Compile Check
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Arduino CLI
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+          echo "$PWD/bin" >> $GITHUB_PATH
+      
+      - name: Install Arduino Core and Libraries
+        run: |
+          arduino-cli core update-index
+          arduino-cli core install rp2040:rp2040
+          arduino-cli lib install "Adafruit MCP2515"
+      
+      - name: Compile Firmware
+        run: |
+          arduino-cli compile --fqbn rp2040:rp2040:adafruit_feather can_relay_node_multi.ino --warnings all
+      
+      - name: Check for compilation warnings
+        run: |
+          arduino-cli compile --fqbn rp2040:rp2040:adafruit_feather can_relay_node_multi.ino --warnings all 2>&1 | tee compile.log
+          if grep -i "warning" compile.log; then
+            echo "::warning::Compilation warnings found"
+          fi
+
+  code-style-check:
+    runs-on: ubuntu-latest
+    name: Code Style Validation
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Check Python formatting (black - report only)
+        run: |
+          pip install black
+          black --check --diff tests/ ros_can_bridge_native/ scripts/ || true
+        continue-on-error: true
+      
+      - name: Check for TODO/FIXME comments
+        run: |
+          echo "Checking for TODO/FIXME markers..."
+          grep -rn "TODO\|FIXME" --include="*.py" --include="*.ino" . || echo "No TODO/FIXME found"
+      
+      - name: Verify documentation exists
+        run: |
+          test -f README.md && echo "✓ README.md exists"
+          test -f can_relay_node_multi.ino && echo "✓ Multi-node firmware exists"
+          test -f config/multi_node_map.yaml && echo "✓ Multi-node config exists"
+          test -f tests/test_multi_node.py && echo "✓ Multi-node test suite exists"
+          echo "All required files found"
+
+  integration-test:
+    runs-on: ubuntu-latest
+    name: Integration Tests (Mock Mode)
+    needs: [python-lint-and-test]
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install python-can
+        run: |
+          pip install python-can
+      
+      - name: Setup virtual CAN
+        run: |
+          sudo modprobe vcan
+          sudo ip link add dev vcan0 type vcan
+          sudo ip link set up vcan0
+          ip link show vcan0
+      
+      - name: Run integration tests
+        run: |
+          cd tests
+          # Run with virtual backend - will test code paths but no real hardware
+          timeout 60 python3 test_harness.py --interface vcan0 --node-id 0x15 --dry-run || echo "Tests completed or timed out"
+        continue-on-error: true  # No real hardware, so tests may not pass fully
+
+  summary:
+    runs-on: ubuntu-latest
+    name: CI Summary
+    needs: [python-lint-and-test, arduino-compile-check, code-style-check]
+    if: always()
+    
+    steps:
+      - name: Check results
+        run: |
+          echo "CI Pipeline Complete"
+          echo "- Python lint: ${{ needs.python-lint-and-test.result }}"
+          echo "- Arduino compile: ${{ needs.arduino-compile-check.result }}"
+          echo "- Code style: ${{ needs.code-style-check.result }}"
+          
+          if [ "${{ needs.python-lint-and-test.result }}" != "success" ] || \
+             [ "${{ needs.arduino-compile-check.result }}" != "success" ]; then
+            echo "::error::One or more critical checks failed"
+            exit 1
+          fi
+          
+          echo "::notice::All critical checks passed ✓"

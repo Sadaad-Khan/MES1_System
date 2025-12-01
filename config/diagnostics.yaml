@@ -1,0 +1,27 @@
+/**:
+  ros__parameters:
+    # Diagnostic Publishing
+    publish_rate: 1.0  # Hz
+    
+    # Thresholds for Warnings
+    bus_load_warning: 0.7      # 70% bus utilization
+    bus_load_error: 0.9        # 90% bus utilization
+    
+    error_rate_warning: 0.01   # 1% error rate
+    error_rate_error: 0.05     # 5% error rate
+    
+    latency_warning: 10.0      # 10ms average latency
+    latency_error: 50.0        # 50ms average latency
+    
+    # Heartbeat Monitoring
+    heartbeat_timeout: 5.0     # seconds
+    heartbeat_stale_warning: 2.0  # seconds
+    
+    # Buffer Utilization
+    buffer_warning: 0.8        # 80% full
+    buffer_error: 0.95         # 95% full
+    
+    # SDO Transaction Monitoring
+    sdo_timeout: 3.0           # seconds
+    sdo_failure_rate_warning: 0.05  # 5% failure rate
+    sdo_failure_rate_error: 0.10    # 10% failure rate

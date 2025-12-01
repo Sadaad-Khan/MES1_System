@@ -1,0 +1,29 @@
+/**:
+  ros__parameters:
+    # SocketCAN Interface Configuration
+    interface_name: "can0"
+    bitrate: 1000000
+    sample_point: 0.875
+    
+    # Queue Settings
+    txqueuelen: 1000
+    
+    # Error Handling
+    restart_ms: 100
+    berr_reporting: true
+    
+    # Loopback and Listen-Only
+    loopback: false
+    listen_only: false
+    
+    # Triple Sampling
+    triple_sampling: false
+    
+    # One-Shot Mode (no automatic retransmission)
+    one_shot: false
+    
+    # Bus Timing (advanced - leave default unless needed)
+    # sjw: 1
+    # prop_seg: 6
+    # phase_seg1: 7
+    # phase_seg2: 2

@@ -1,0 +1,9 @@
+# Request
+uint8 cmd                    # Command code (1-8, 0, 99, 254)
+---
+# Response
+bool success                 # Operation succeeded
+string message               # Human-readable result
+uint8 relay_state           # Current relay bitmap (0b0000XXXX)
+uint8 error_code            # Error code if failed
+float32 execution_time      # Command execution time (seconds)

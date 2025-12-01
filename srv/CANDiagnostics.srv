@@ -1,0 +1,13 @@
+# Request
+bool reset_statistics       # Clear accumulated stats
+---
+# Response
+uint64 frames_tx            # Total frames transmitted
+uint64 frames_rx            # Total frames received
+uint64 errors_tx            # Transmission errors
+uint64 errors_rx            # Reception errors
+float32 bus_load            # Bus utilization (0.0-1.0)
+float32 avg_latency         # Average SDO latency (ms)
+uint32 sdo_success          # Successful SDO transactions
+uint32 sdo_failures         # Failed SDO transactions
+string bus_state            # ERROR_ACTIVE/ERROR_PASSIVE/BUS_OFF

@@ -1,0 +1,36 @@
+/**:
+  ros__parameters:
+    # CAN Interface
+    can_interface: "can0"
+    bitrate: 1000000
+    
+    # CANopen Configuration
+    node_id: 21
+    sdo_timeout: 3.0
+    heartbeat_timeout: 5.0
+    heartbeat_expected_interval: 1.0
+    
+    # Network Settings
+    reconnect_delay: 2.0
+    max_retry_attempts: 3
+    
+    # Performance Tuning
+    rx_buffer_size: 1000
+    tx_buffer_size: 100
+    thread_priority: 50
+    
+    # Diagnostics
+    enable_diagnostics: true
+    diagnostic_rate: 1.0
+    publish_all_frames: true
+    
+    # Logging
+    log_level: "INFO"  # DEBUG, INFO, WARN, ERROR
+    log_can_frames: false
+    log_to_file: false
+    log_file_path: "/tmp/can_bridge.log"
+    
+    # Safety
+    enable_watchdog: true
+    watchdog_timeout: 10.0
+    emergency_stop_enabled: true
