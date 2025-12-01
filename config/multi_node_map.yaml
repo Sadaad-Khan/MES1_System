@@ -90,7 +90,42 @@ nodes:
     services:
       control: "/relay_battery/control"
   
-  # Node D: Future Expansion
+  # Node D: Winch Motor Control
+  - name: winch_motor
+    node_id: 0x15  # 21 decimal
+    role: WINCH
+    description: "Winch motor control (bi-directional with limit switches)"
+    motor_pins:
+      - id: FWD
+        pin: 9
+        description: "Forward/Extend motor control (PWM)"
+      - id: REV
+        pin: 10
+        description: "Reverse/Retract motor control (PWM)"
+    limit_switches:
+      - id: RET_LIM
+        pin: 5
+        description: "Retract limit switch (INPUT_PULLUP)"
+      - id: EXT_LIM
+        pin: 6
+        description: "Extend limit switch (INPUT_PULLUP)"
+    supported_commands:
+      - 1    # CMD_WINCH_RETRACT (requires duration bytes)
+      - 2    # CMD_WINCH_EXTEND (requires duration bytes)
+      - 3    # CMD_WINCH_STOP
+      - 254  # SOFTWARE_RESET
+    topics:
+      state: "/winch_motor/state"
+      diagnostics: "/winch_motor/diagnostics"
+      progress: "/winch_motor/progress"
+    services:
+      control: "/winch_motor/control"
+    action_server:
+      name: "/winch_control"
+      type: "winch_msgs/action/SetTarget"
+    enabled: true
+  
+  # Node E: Future Expansion
   - name: relay_future
     node_id: 0x14  # 20 decimal
     role: FUTURE

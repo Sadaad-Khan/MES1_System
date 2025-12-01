@@ -103,9 +103,9 @@ constexpr uint16_t OD_NODE_ROLE       = 0x2004;  // Read: Node role identifier
 // ============================================================================
 // HARDWARE PIN DEFINITIONS
 // ============================================================================
-
-#define CS_PIN    PIN_CAN_CS           
-#define INT_PIN   PIN_CAN_INT
+// MCP2515 CAN Controller Pins (Adafruit Feather RP2040 CAN)
+#define CS_PIN    17   // CAN chip select (D17)
+#define INT_PIN   20   // CAN interrupt (D20)
 
 // --- Role-Specific Pin Mappings ---
 #if NODE_ROLE == ROLE_DRL
