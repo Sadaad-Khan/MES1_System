@@ -1,6 +1,6 @@
-# ROS 2 CANopen Relay Control System
+# MES1 System - Multi-Node CANopen Control
 
-This project implements a distributed CANopen network bridging ROS 2 Humble with multiple microcontroller nodes (RP2040). It uses native Linux SocketCAN for communication and supports standard CANopen SDO protocols for device control.
+MES1 (Multi-Equipment System 1) is a distributed CANopen network bridging ROS 2 Humble with multiple microcontroller nodes for relay and winch motor control. It uses native Linux SocketCAN and standard CANopen SDO protocols.
 
 ## System Architecture
 

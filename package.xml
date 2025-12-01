@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>ros_can_bridge_native</name>
+  <name>mes1_system</name>
   <version>2.0.0</version>
-  <description>Production-grade ROS 2 CAN Bridge for gs_usb with native SocketCAN support</description>
-  <maintainer email="sadaa@example.com">Sadaa Khan</maintainer>
+  <description>MES1 System - Multi-node CANopen control system for relay and winch motor management</description>
+  <maintainer email="sadaaadkhan@gmail.com">Sadaad Khan</maintainer>
   <license>MIT</license>
 
   <buildtool_depend>ament_python</buildtool_depend>

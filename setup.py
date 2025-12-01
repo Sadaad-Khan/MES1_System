@@ -2,15 +2,15 @@ from setuptools import setup
 import os
 from glob import glob
 
-package_name = 'ros_can_bridge_native'
+package_name = 'mes1_system'
 
 setup(
     name=package_name,
     version='2.0.0',
-    packages=[package_name, f'{package_name}.utils'],
+    packages=['ros_can_bridge_native', 'ros_can_bridge_native.utils'],  # Keep module names for compatibility
     data_files=[
         ('share/ament_index/resource_index/packages',
-            ['resource/' + package_name]),
+            ['resource/mes1_system']),
         ('share/' + package_name, ['package.xml']),
         (os.path.join('share', package_name, 'launch'), glob('launch/*.py')),
         (os.path.join('share', package_name, 'config'), glob('config/*.yaml')),
