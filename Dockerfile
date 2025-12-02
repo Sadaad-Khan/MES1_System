@@ -67,4 +67,4 @@ RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc && \
 WORKDIR ${WORKSPACE}
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["ros2", "launch", "mes1_system", "can_bridge.launch.py"]
+CMD ["/ros2_ws/install/mes1_system/lib/ros_can_bridge_native/socketcan_bridge_node"]

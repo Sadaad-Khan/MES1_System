@@ -17,7 +17,7 @@ def generate_launch_description():
     """Generate launch description for multi-node CAN bridge."""
     
     # Package share directory
-    pkg_share = FindPackageShare('ros_can_bridge_native')
+    pkg_share = FindPackageShare('mes1_system')
     
     # Default config file path
     default_config = PathJoinSubstitution([

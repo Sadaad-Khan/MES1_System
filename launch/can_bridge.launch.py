@@ -11,7 +11,7 @@ import os
 
 def generate_launch_description():
     # Get package directory
-    pkg_dir = get_package_share_directory('ros_can_bridge_native')
+    pkg_dir = get_package_share_directory('mes1_system')
     config_dir = os.path.join(pkg_dir, 'config')
     
     # Launch arguments
@@ -55,11 +55,12 @@ def generate_launch_description():
     setup_can = ExecuteProcess(
         condition=IfCondition(LaunchConfiguration('setup_can')),
         cmd=[
-            'bash', '-c',
-            'sudo ip link set ' + LaunchConfiguration('can_interface').perform(None) + ' type can bitrate ' + 
-            LaunchConfiguration('bitrate').perform(None) + ' && ' +
-            'sudo ip link set ' + LaunchConfiguration('can_interface').perform(None) + ' txqueuelen 1000 && ' +
-            'sudo ip link set ' + LaunchConfiguration('can_interface').perform(None) + ' up'
+            'bash', '-c', [
+                'sudo ip link set ', LaunchConfiguration('can_interface'), 
+                ' type can bitrate ', LaunchConfiguration('bitrate'), 
+                ' && sudo ip link set ', LaunchConfiguration('can_interface'), 
+                ' txqueuelen 1000 && sudo ip link set ', LaunchConfiguration('can_interface'), ' up'
+            ]
         ],
         shell=True,
         output='screen'
@@ -67,7 +68,7 @@ def generate_launch_description():
     
     # Main bridge node
     bridge_node = Node(
-        package='ros_can_bridge_native',
+        package='ros_can_bridge_native',  # Executables are under this name
         executable='socketcan_bridge_node',
         name='can_bridge_node',
         output='screen',
@@ -88,7 +89,7 @@ def generate_launch_description():
     
     # Diagnostics node
     diagnostics_node = Node(
-        package='ros_can_bridge_native',
+        package='ros_can_bridge_native',  # Executables are under this name
         executable='diagnostics_publisher',
         name='can_diagnostics',
         output='screen',

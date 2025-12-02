@@ -41,12 +41,16 @@ services:
     # Restart policy
     restart: unless-stopped
     
-    # Command (override default if needed)
-    command: >
-      ros2 launch mes1_system can_bridge.launch.py
-      can_interface:=${CAN_INTERFACE}
-      node_id:=${NODE_ID}
-      setup_can:=false
+    # Command - run socketcan bridge node directly
+    command:
+      - /ros2_ws/install/mes1_system/lib/ros_can_bridge_native/socketcan_bridge_node
+      - --ros-args
+      - -p
+      - can_interface:=can0
+      - -p
+      - node_id:=21
+      - -p
+      - bitrate:=1000000
     
     # Health check
     healthcheck:

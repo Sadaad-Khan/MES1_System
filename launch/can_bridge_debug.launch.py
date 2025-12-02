@@ -10,7 +10,7 @@ import os
 
 def generate_launch_description():
     # Get package directory
-    pkg_dir = get_package_share_directory('ros_can_bridge_native')
+    pkg_dir = get_package_share_directory('mes1_system')
     config_dir = os.path.join(pkg_dir, 'config')
     
     # Launch arguments
