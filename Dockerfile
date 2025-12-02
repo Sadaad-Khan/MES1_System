@@ -39,10 +39,17 @@ RUN mkdir -p ${WORKSPACE}/src
 # Copy package source
 COPY . ${WORKSPACE}/src/mes1_system/
 
-# Install dependencies using rosdep
+# Install ROS 2 build dependencies
+RUN apt-get update && apt-get install -y \
+    python3-colcon-common-extensions \
+    ros-${ROS_DISTRO}-ament-cmake \
+    ros-${ROS_DISTRO}-ament-cmake-python \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install dependencies using rosdep (skip unresolvable ones)
 RUN . /opt/ros/${ROS_DISTRO}/setup.sh && \
     rosdep update && \
-    rosdep install --from-paths src --ignore-src -r -y
+    rosdep install --from-paths src --ignore-src -r -y || true
 
 # Build the package
 RUN . /opt/ros/${ROS_DISTRO}/setup.sh && \
