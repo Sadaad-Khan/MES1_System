@@ -1,4 +1,4 @@
-# Docker deployment for ROS 2 CAN Bridge
+# Docker deployment for MES1 System
 # Based on ROS 2 Humble with CAN support
 
 FROM ros:humble
@@ -37,7 +37,7 @@ WORKDIR ${WORKSPACE}
 RUN mkdir -p ${WORKSPACE}/src
 
 # Copy package source
-COPY . ${WORKSPACE}/src/ros_can_bridge_native/
+COPY . ${WORKSPACE}/src/mes1_system/
 
 # Install dependencies using rosdep
 RUN . /opt/ros/${ROS_DISTRO}/setup.sh && \
@@ -60,4 +60,4 @@ RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc && \
 WORKDIR ${WORKSPACE}
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["ros2", "launch", "ros_can_bridge_native", "can_bridge.launch.py"]
+CMD ["ros2", "launch", "mes1_system", "can_bridge.launch.py"]

@@ -7,7 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR/.."
 
 echo "========================================="
-echo "ROS 2 CAN Bridge - Docker Quick Start"
+echo "MES1 System - Docker Quick Start"
 echo "========================================="
 echo ""
 
@@ -73,7 +73,7 @@ echo
 if [[ ! $REPLY =~ ^[Nn]$ ]]; then
     echo ""
     echo "Building Docker image..."
-    docker build -t ros2_can_bridge_native:latest -f Dockerfile .
+    docker build -t mes1_system:latest -f Dockerfile .
     echo "✓ Docker image built"
 fi
 
@@ -103,22 +103,22 @@ case $REPLY in
     2)
         echo "Starting with docker run..."
         docker run -it --rm \
-            --name ros2_can_bridge \
+            --name mes1_can_bridge \
             --network host \
             --privileged \
             --cap-add=NET_ADMIN \
             -e CAN_INTERFACE=can0 \
             -e NODE_ID=21 \
-            ros2_can_bridge_native:latest
+            mes1_system:latest
         ;;
     3)
         echo "Starting interactive shell..."
         docker run -it --rm \
-            --name ros2_can_bridge_shell \
+            --name mes1_shell \
             --network host \
             --privileged \
             --cap-add=NET_ADMIN \
-            ros2_can_bridge_native:latest \
+            mes1_system:latest \
             bash
         ;;
     4)

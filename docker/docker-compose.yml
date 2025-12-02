@@ -5,8 +5,8 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
-    container_name: ros2_can_bridge
-    image: ros2_can_bridge_native:latest
+    container_name: mes1_can_bridge
+    image: mes1_system:latest
     
     # Network mode: host is required for CAN interface access
     network_mode: host
@@ -36,7 +36,7 @@ services:
       - /sys/class/net:/sys/class/net:ro
       - /sys/devices:/sys/devices:ro
       # Optional: Mount config directory
-      - ./config:/ros2_ws/src/ros_can_bridge_native/config:ro
+      - ./config:/ros2_ws/src/mes1_system/config:ro
       # Optional: Mount logs directory
       - ./logs:/var/log/can_bridge
     
@@ -45,7 +45,7 @@ services:
     
     # Command (override default if needed)
     command: >
-      ros2 launch ros_can_bridge_native can_bridge.launch.py
+      ros2 launch mes1_system can_bridge.launch.py
       can_interface:=${CAN_INTERFACE}
       node_id:=${NODE_ID}
       setup_can:=false
@@ -60,8 +60,8 @@ services:
 
   # Optional: Separate diagnostics viewer
   diagnostics_viewer:
-    image: ros2_can_bridge_native:latest
-    container_name: ros2_can_diagnostics
+    image: mes1_system:latest
+    container_name: mes1_diagnostics
     network_mode: host
     environment:
       - ROS_DOMAIN_ID=0
@@ -74,15 +74,15 @@ services:
 
   # Optional: Interactive command client
   command_client:
-    image: ros2_can_bridge_native:latest
-    container_name: ros2_can_client
+    image: mes1_system:latest
+    container_name: mes1_client
     network_mode: host
     stdin_open: true
     tty: true
     environment:
       - ROS_DOMAIN_ID=0
       - ROS_LOCALHOST_ONLY=0
-    command: ros2 run ros_can_bridge_native command_client
+    command: ros2 run mes1_system command_client
     depends_on:
       - can_bridge
     profiles:
